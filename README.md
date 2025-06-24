@@ -28,3 +28,9 @@ python src\app.py
 ```
 
 acceder desde un navegador al la dirección http://localhost:5000
+
+
+## TODO
+- Continuar con la imagen de docker
+- Manejo de excepciones
+- hacer set de pruebas
