@@ -54,6 +54,8 @@ def get_sentiment_analysis(phrases):
     return retval
 
 def obtener_analisis(file):
+    if not os.path.exists(get_runtime_temp_path()):
+        os.makedirs(get_runtime_temp_path())
     transcripcion = obtener_transcripcion(file)
     analisis_sentimientos = get_sentiment_analysis(transcripcion["phrases"])
 
@@ -66,20 +68,24 @@ def obtener_analisis(file):
     return resultado_json, transcripcion["combinedPhrases"][0]["text"]
 
 def obtener_desde_json():
-    transcr_json = get_runtime_temp_path()+'/response.json'
-    with open(transcr_json, encoding='utf8') as file:
-        transcripcion = json.load(file)
+    try:
+        transcr_json = get_runtime_temp_path()+'/response.json'
+        with open(transcr_json, encoding='utf8') as file:
+            transcripcion = json.load(file)
 
-    sent_json = 'src/temp/response_sentiment.json'
-    with open(sent_json, encoding='utf8') as file:
-        sentiment_result = json.load(file)
+        sent_json = 'src/temp/response_sentiment.json'
+        with open(sent_json, encoding='utf8') as file:
+            sentiment_result = json.load(file)
 
-    def solo_mensajes(elemento):
-        clase_text = "agente-message" if elemento["speaker"]==1 else "user-message"
-        return {"texto":elemento["documents"]["sentences"][0]["text"],"clase":clase_text,"sentimiento":elemento["documents"]["sentiment"]}
+        def solo_mensajes(elemento):
+            clase_text = "agente-message" if elemento["speaker"]==1 else "user-message"
+            return {"texto":elemento["documents"]["sentences"][0]["text"],"clase":clase_text,"sentimiento":elemento["documents"]["sentiment"]}
+
+        resultado_json = list(map(solo_mensajes,sentiment_result))
+        return resultado_json, transcripcion["combinedPhrases"][0]["text"]
+    except Exception as exc:
+        return f"Se presentó una excepción: {exc}", exc
     
-    resultado_json = list(map(solo_mensajes,sentiment_result))
-    return resultado_json, transcripcion["combinedPhrases"][0]["text"]
 
 def obtener_transcripcion(file):
     url_servicio = os.environ.get('ENDPOINT')+"speechtotext/transcriptions:transcribe?api-version=2024-11-15"
